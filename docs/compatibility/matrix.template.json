@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "observed_at": null,
+  "platform": null,
+  "records": [],
+  "m0_gate": { "passed": false, "reason": "Evidence not collected." }
+}

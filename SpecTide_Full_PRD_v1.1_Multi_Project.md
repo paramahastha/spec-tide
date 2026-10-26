@@ -1559,6 +1559,20 @@ This PRD is deliberately written as a **source document for implementation**, no
 
 A one-shot user request can create the **entire plan** in advance, but code execution should proceed through observable checkpoints: M0 compatibility → foundation → working SDD run → provider handoffs → evidence → UI → hardening. This keeps a single high-level product intent while preventing a long-running agent from concealing failed tests or invalid assumptions. The developer may use separate model profiles per milestone.
 
+### 24.2a Specification slicing decision
+
+Do not put the complete product into one oversized feature specification. Create and validate these feature specifications in dependency order:
+
+1. `001-foundation-workspace` — M0/M1: compatibility proof, project registry, trust, isolation, and durable state.
+2. `002-workflow-execution` — M2: one supported full workflow with persisted stages, checkpoints, scoped queues, and a minimal end-to-end run.
+3. `003-agent-profiles-handoffs` — M3: supported adapters, profile routing, capability checks, and deterministic cross-agent handoffs.
+4. `004-evidence-verification` — M4: requirement indexing, test evidence, verified/partial/failed outcomes, and reports.
+5. `005-dashboard-review` — M5: All Projects view, live status, approvals, logs, and reports.
+6. `006-beta-hardening` — M6: migrations, fault injection, compatibility matrix, documentation, and release gates.
+7. Create separate follow-on specifications for P1 and P2 capabilities.
+
+The first minimal end-to-end workflow belongs in M2, then gains trustworthy cross-agent routing, evidence, user experience, and release hardening through the later slices.
+
 ### 24.3 Artifacts to generate from this PRD
 
 ```text

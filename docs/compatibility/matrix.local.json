@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0",
+  "observed_at": "2026-10-26",
+  "platform": {
+    "os": "Darwin 24.1.0 arm64",
+    "node": "v24.22.1",
+    "pnpm": "10.17.1",
+    "git": "git version 2.39.5 (Apple Git-154)"
+  },
+  "spec_kit": {
+    "result": "unverified",
+    "artifacts_observed": true,
+    "version": null,
+    "boundary": "attempted through the installed Full SDD Cycle in a disposable Spec Kit fixture; the selected Codex integration ran read-only and could not persist the requested artifact",
+    "resume_result": "not exercised",
+    "evidence": [
+      "Spec Kit artifacts were detected read-only; artifact detection is not compatibility evidence.",
+      "The workflow reached its review gate, but the Codex step reported that writes were blocked by its read-only sandbox. No spec artifact was persisted, so this is not a qualifying safe workflow boundary."
+    ]
+  },
+  "interfaces": [
+    {
+      "name": "Codex CLI",
+      "observed_version": "codex-cli 0.163.0",
+      "result": "unverified",
+      "boundary": "version availability only",
+      "resume_result": "not exercised",
+      "evidence": [
+        "Codex was selected by the disposable Spec Kit workflow, but its read-only step could not persist the expected spec artifact; no qualifying Codex workflow boundary or resume was recorded."
+      ]
+    },
+    {
+      "name": "OpenCode",
+      "observed_version": "opencode v2.0.32",
+      "result": "unverified",
+      "boundary": "version availability only",
+      "resume_result": "not exercised",
+      "evidence": [
+        "A disposable read-only plan-agent request was attempted. OpenCode returned provider.quota (HTTP 429) before a model response; no boundary or resume result was observed."
+      ]
+    }
+  ],
+  "suite_outcomes": {
+    "build": "passed",
+    "typecheck": "passed",
+    "lint": "passed",
+    "format": "passed",
+    "automated_tests": "43 passed"
+  },
+  "latest_validation": {
+    "observed_at": "2026-10-26",
+    "node": "v24.22.1",
+    "platform": "Debian 12 Linux arm64 container (local Docker)",
+    "engine_pin_match": true,
+    "build_typecheck": "passed",
+    "lint": "passed",
+    "format": "passed",
+    "automated_tests": "43 passed"
+  },
+  "fixture_validation": {
+    "observed_at": "2026-10-26",
+    "mode": "disposable mock interfaces",
+    "safe_argument_boundary": "passed",
+    "controlled_interruption_resume": "passed",
+    "sanitized_records_persisted": ["Spec Kit artifact probe", "Codex mock", "OpenCode mock"],
+    "m0_qualifying_evidence": false,
+    "reason": "Mock fixture records carry evidence_origin=mock_fixture and cannot establish support for installed tools."
+  },
+  "m0_gate": {
+    "passed": false,
+    "reason": "The 2026-10-27 fixture established Codex workflow artifact creation and recovery after a failed step, and a separate OpenCode artifact-reading boundary, but Spec Kit's installed OpenCode integration fails on the unsupported --command flag. Controlled interruption/resume evidence for both agent interfaces and a qualifying supported two-agent workflow handoff remain outstanding.",
+    "qualification_policy": {
+      "requires_version": true,
+      "requires_evidence_origin": "observed_tool",
+      "requires_safe_boundary_completed": true,
+      "requires_resume_result": "resumed",
+      "requires_resume_completed": true,
+      "requires_sanitized_evidence": true,
+      "qualifying_agent_interface_count": 0
+    }
+  },
+  "m0_followup_2026_10_27": {
+    "specify_version": "1.2.2.dev0",
+    "workflow": "speckit 1.0.1",
+    "codex_version": "0.163.0",
+    "opencode_version": "2.0.32",
+    "claude_version": "2.1.306",
+    "codex_workflow_boundary": "Spec Kit launched Codex with workspace-write through SPECKIT_INTEGRATION_CODEX_EXTRA_ARGS; the fixture specification and checklist were persisted before the workflow paused at review-spec.",
+    "spec_kit_recovery": "After the OpenCode plan step failed, the same workflow resumed with Codex and reached review-plan; the previously completed specification SHA-256 remained fa339e8c7ce84feab0ab894dcaa8511bb7604b7c0d603d2c71e505ea8d975c84.",
+    "opencode_workflow_integration": "unsupported: Spec Kit passes --command to opencode run; installed OpenCode 2.0.32 rejected it with an unrecognized flag error.",
+    "opencode_legacy_probe": "Pinned opencode-ai 1.3.12 installed only in the disposable fixture with install scripts disabled and advertised --command. Its read-only marker request failed at startup while initializing an existing OpenCode data-store table. No native workflow or authentication capability was established. A subsequent OpenCode 2.0.32 read-only marker request succeeded.",
+    "direct_agent_boundaries": "Codex and OpenCode each completed a read-only marker request and continued the same session with the marker intact. OpenCode also read the Codex-created specification through an explicitly attached file and continued its session with the correct requirement ID.",
+    "limitations": [
+      "Session continuation after a completed turn is not proof of recovery from an interrupted process.",
+      "The direct OpenCode artifact-reading demonstration is not a successful native Spec Kit OpenCode stage.",
+      "OpenCode 1.3.12 used the existing default OpenCode data directory on its attempted startup and reported a database initialization error. It requires a separately isolated, authenticated data environment before any further compatibility test; no credentials were copied.",
+      "The full two-agent stage handoff and controlled interruption/resume gate has not passed and no qualifying records were written to the local application database.",
+      "Claude Code was installed but reported no authenticated account.",
+      "The Codex workspace-write sandbox permits its configured temporary directories; the fixture agent briefly created and removed a resolver file in /tmp outside the fixture. A Git worktree is not an OS, network, or credentials sandbox.",
+      "Spec Kit's default read-only Codex run reached a review gate despite producing no specification; consumers must check actual artifact postconditions."
+    ]
+  },
+  "performance": {
+    "tracked_files": 100000,
+    "nearest_rank_p95_ms": 208.94,
+    "target_ms": 2000,
+    "passed": true,
+    "runtime_note": "Measured with pinned Node v24.22.1.",
+    "latest_post_change_observation": {
+      "node": "v26.12.0",
+      "tracked_files": 100000,
+      "nearest_rank_p95_ms": 1308.21,
+      "passed_threshold": true,
+      "qualifies_for_pinned_runtime_result": false
+    }
+  }
+}

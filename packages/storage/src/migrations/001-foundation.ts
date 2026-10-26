@@ -1,0 +1,21 @@
+import type { Store } from '../database.js';
+
+/** Apply the original foundation schema after the migration backup is durable. */
+export function applyFoundationMigration(db: Store): void {
+  db.exec(`CREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);
+CREATE TABLE projects(project_id TEXT PRIMARY KEY,display_name TEXT NOT NULL,root_realpath TEXT NOT NULL,git_identity_fingerprint TEXT NOT NULL,git_location_fingerprint TEXT NOT NULL,git_common_dir_realpath TEXT NOT NULL,trust_state TEXT NOT NULL,registry_state TEXT NOT NULL,availability_state TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,last_validated_at TEXT NOT NULL);
+CREATE TABLE operations(operation_id TEXT PRIMARY KEY,project_id TEXT REFERENCES projects(project_id),kind TEXT NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,state TEXT NOT NULL,request_digest TEXT NOT NULL,risk_classification TEXT NOT NULL,approval_decision TEXT NOT NULL,approval_actor TEXT,approved_at TEXT,started_at TEXT NOT NULL,finished_at TEXT,error_code TEXT,error_redacted TEXT,next_action TEXT);
+CREATE TABLE project_locations(location_id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(project_id),root_realpath TEXT NOT NULL,status TEXT NOT NULL,validated_fingerprint TEXT NOT NULL,validation_operation_id TEXT NOT NULL REFERENCES operations(operation_id));
+CREATE TABLE compatibility_records(compatibility_id TEXT PRIMARY KEY,project_id TEXT REFERENCES projects(project_id),subject_kind TEXT NOT NULL,subject_name TEXT NOT NULL,observed_version TEXT,capabilities TEXT NOT NULL,result TEXT NOT NULL,evidence_redacted TEXT NOT NULL,limitations TEXT NOT NULL,next_action TEXT NOT NULL,resume_result TEXT,observed_at TEXT NOT NULL);
+CREATE TABLE workspace_previews(confirmation_digest TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(project_id),workspace_id TEXT NOT NULL UNIQUE,target_realpath TEXT NOT NULL,base_commit TEXT NOT NULL,expires_at TEXT NOT NULL,consumed_at TEXT);
+CREATE TABLE workspaces(workspace_id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(project_id),operation_id TEXT NOT NULL UNIQUE REFERENCES operations(operation_id),root_realpath TEXT NOT NULL UNIQUE,base_commit TEXT NOT NULL,state TEXT NOT NULL,created_at TEXT NOT NULL,validated_at TEXT);
+CREATE TABLE config_snapshots(snapshot_id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(project_id),source_path TEXT NOT NULL,fingerprint TEXT NOT NULL,kind TEXT NOT NULL,schema_version TEXT,discovery_status TEXT NOT NULL,safe_summary TEXT NOT NULL);
+CREATE UNIQUE INDEX project_active_root_idx ON projects(root_realpath) WHERE registry_state != 'unregistered';
+CREATE INDEX operations_project_idx ON operations(project_id,started_at); CREATE INDEX compatibility_project_idx ON compatibility_records(project_id,observed_at); CREATE INDEX workspaces_project_idx ON workspaces(project_id);
+CREATE TRIGGER projects_id_immutable BEFORE UPDATE OF project_id ON projects BEGIN SELECT RAISE(ABORT,'project_id is immutable'); END;
+CREATE TRIGGER workspace_owner_immutable BEFORE UPDATE OF project_id,base_commit ON workspaces BEGIN SELECT RAISE(ABORT,'workspace owner and base commit are immutable'); END;
+CREATE TRIGGER operation_digest_risk_immutable BEFORE UPDATE OF request_digest,risk_classification ON operations BEGIN SELECT RAISE(ABORT,'operation digest and risk are immutable'); END;
+CREATE TRIGGER operation_approval_required BEFORE INSERT ON operations WHEN NEW.state='applying' AND NEW.kind IN ('register','relink','archive','restore','unregister','prepare_workspace') AND (NEW.approval_decision!='approved' OR NEW.approval_actor IS NULL OR NEW.approved_at IS NULL) BEGIN SELECT RAISE(ABORT,'explicit approval audit required'); END;
+CREATE TRIGGER operation_approval_required_update BEFORE UPDATE OF state ON operations WHEN NEW.state='applying' AND NEW.kind IN ('register','relink','archive','restore','unregister','prepare_workspace') AND (NEW.approval_decision!='approved' OR NEW.approval_actor IS NULL OR NEW.approved_at IS NULL) BEGIN SELECT RAISE(ABORT,'explicit approval audit required'); END;
+INSERT INTO schema_migrations(version, applied_at) VALUES(1,datetime('now'));`);
+}

@@ -1,0 +1,52 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  verify:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm test
+
+  wsl:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Vampire/setup-wsl@v7
+        with:
+          distribution: Debian-13
+          additional-packages: ca-certificates curl git xz-utils
+      - name: Install pinned Node.js and pnpm, then verify inside WSL2
+        shell: wsl-bash {0}
+        run: |
+          set -euo pipefail
+          node_version=24.22.1
+          pnpm_version=10.17.1
+          install_dir="$HOME/.local/node-v${node_version}"
+          mkdir -p "$install_dir"
+          curl --fail --location --silent --show-error \
+            "https://nodejs.org/dist/v${node_version}/node-v${node_version}-linux-x64.tar.xz" \
+            | tar -xJ --strip-components=1 -C "$install_dir"
+          export PATH="$install_dir/bin:$PATH"
+          corepack enable
+          corepack prepare "pnpm@${pnpm_version}" --activate
+          node --version
+          pnpm --version
+          git --version
+          pnpm install --frozen-lockfile
+          pnpm build
+          pnpm typecheck
+          pnpm lint
+          pnpm format:check
+          pnpm test

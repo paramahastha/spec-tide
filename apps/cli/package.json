@@ -1,0 +1,21 @@
+{
+  "name": "@spectide/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "spectide": "dist/main.js"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@spectide/contracts": "workspace:*",
+    "@spectide/core": "workspace:*",
+    "@spectide/storage": "workspace:*",
+    "@spectide/project": "workspace:*",
+    "@spectide/diagnostics": "workspace:*",
+    "@spectide/workspace": "workspace:*",
+    "commander": "^13.1.0"
+  }
+}
